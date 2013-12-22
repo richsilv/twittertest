@@ -1,0 +1,173 @@
+<head>
+  <title>twittertest</title>
+</head>
+
+<body>
+  {{> main}}
+</body>
+
+<template name="main">
+	{{> topbar}}
+	<section>
+	  	{{#if mode 'home'}}
+	  		{{> home}}
+		{{/if}}
+	  	{{#if mode 'training'}}
+	  		{{> trainingset}}
+	  	{{/if}}
+	  	{{#if mode 'classify'}}
+	  		{{> classify}}
+	  	{{/if}}
+	  	{{#if mode 'sentiment'}}
+	  		{{> sentiment}}
+	  	{{/if}}
+  	</section>
+</template>
+
+<template name="topbar">
+	<nav class="top-bar" data-topbar data-options="is_hover: true">
+	  <ul class="title-area">
+	    <li class="name">
+	      <h1><a href="#">Twitter Sentiment Analysis</a></h1>
+	    </li>
+	    <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+	  </ul>
+
+	  <section class="top-bar-section">
+	    <!-- Right Nav Section -->
+	    <ul class="right">
+	    	<li class="has-form">
+			  	<div class="row collapse">
+			    	<div class="large-12 columns">
+			      		<a href="#" class="alert button radius{{#unless currentClassifier}} disabled{{/unless}}" id="deleteClassifier">Delete Classifier</a>
+			    	</div>
+			  	</div>
+			</li>
+	      	<li{{#if currentClassifier}} class="active"><a href="#">{{currentClassifier.name}} ({{currentClassifier.type}}){{else}}><a href="#">No Classifier Loaded</a></li>{{/if}}
+	      	<li class="has-dropdown">
+	        	<a href="#">Classifier</a>
+	        	<ul class="dropdown" id="classifierSelect">
+	        		{{#each classifiers}}
+	          			<li id="{{this.name}}"><a href="#">{{this.name}} ({{this.type}})</a></li>
+          			{{/each}}
+          			<li id="new"><a href="#"><strong><em>New classifier</em></strong></a></li>
+	        	</ul>
+	      	</li>
+	    </ul>
+
+	    <!-- Left Nav Section -->
+	    <ul class="left">
+	      	<li id="train"{{#if mode 'training'}} class="active"{{/if}}><a href="#">Train</a></li>
+	      	<li id="classify"{{#if mode 'classify'}} class="active"{{/if}}><a href="#">Classify</a></li>
+	      	<li id="sentiment"{{#if mode 'sentiment'}} class="active"{{/if}}><a href="#">Sentiment</a></li>
+	    </ul>
+	  </section>
+	</nav>
+	<div id="newClassifier" class="reveal-modal small" data-reveal>
+		<div class="row">
+			<div class="large-6 column">
+				<h2>Classifier Name</h2>
+				<input type="text" placeholder="Name here" id="classifierName" />
+			</div>
+			<div class="large-6 column">
+			  	<h2>Classifier Type</h2>
+				<ul class="button-group radius">
+			  		<li><a href="#" class="small button" id="bayes">Naive Bayes</a></li>
+			  		<li><a href="#" class="small button" id="logistic">Logistic Regression</a></li>
+				</ul>
+			</div>
+		</div>
+	  	<a class="close-reveal-modal">&#215;</a>
+	</div>
+</template>
+
+<template name="trainingset">
+	<div class="row">
+		<div class="large-12 columns">
+			<h1>Train Classifier</h1>
+			<a href="#" class="button radius suggest">Suggest</a>
+			<a href="#" class="button radius submit{{#unless currentClassifier}} disabled{{/unless}}">Submit</a>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-12 columns">
+			<h3>Training Set</h3>
+			<table>
+				<thead>
+					<tr>
+						<td>Tweet</td>
+						<td>Sentiment</td>
+					</tr>
+				</thead>
+				<tbody>
+					{{#each trainingData}}
+						<tr>
+							<td>{{this.message}}</td>
+							<td>
+								<select id="{{this.id}}">
+			  						<option value="buy">Buy</option>
+			  						<option value="sell">Sell</option>
+			  						<option value="neutral">Neutral</option>
+			  					</select>
+			  				</td>
+			  			</tr>
+			  		{{/each}}
+			  	</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-12 columns">
+			<a href="#" class="button radius suggest">Suggest</a>
+			<a href="#" class="button radius submit{{#unless currentClassifier}} disabled{{/unless}}">Submit</a>
+		</div>
+	</div>
+</template>
+
+<template name="home">
+	<div class="row">
+		<div class="large-12 columns">
+			<h1>Select Mode</h1>
+			<a href="#" class="button radius" id="train">Train</a>
+			<a href="#" class="button radius" id="classify">Classify</a>
+			<a href="#" class="button radius" id="sentiment">Sentiment</a>
+			<hr>
+		</div>
+	</div>
+</template>
+
+<template name="classify">
+	<div class="row">
+		<div class="large-12 column">
+			<h1>Statement Classification</h1>
+			<div class="row collapse">
+				<div class="large-9 column">
+					<input type="text" placeholder="Insert test statement here" id="statement" />
+				</div>
+				<div class="large-3 column">
+					<a href="#" class="button postfix" id="classifyStatement">Classify</a>
+				</div>
+			</div>
+			<hr>
+			<div id="classificationResults"></div>
+			<div id="classificationScores"></div>
+		</div>
+	<div>
+</template>
+
+<template name="sentiment">
+	<div class="row">
+		<div class="large-12 column">
+			<h1>Sentiment Analysis</h1>
+			<div class="progress radius success">
+  				<span class="meter" style="width: {{score 'buy'}}%" id="buy"></span>
+			</div>
+			<div class="progress radius secondary">
+  				<span class="meter" style="width: {{score 'neutral'}}%" id="neutral"></span>
+			</div>
+			<div class="progress radius alert">
+  				<span class="meter" style="width: {{score 'sell'}}%" id="sell"></span>
+			</div>
+		</div>
+	<div>
+</template>
